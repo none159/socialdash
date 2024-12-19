@@ -47,7 +47,7 @@ const parsed =  await decrypt(session)
 if(parsed){
 parsed.expires = new Date(Date.now() + 10 * 60 * 60 * 1000)
 const res = NextResponse.next()
-res.cookies.set(session,"",{
+res.cookies.set("session",session,{
     httpOnly:true,
     expires:parsed.expires,
     path:"*"
@@ -56,6 +56,9 @@ return res;
 }
 }
 export async function logout() {
-    cookies().set("session", "", { expires: new Date(0) });
+
+        cookies().set("session", "", { expires: new Date(0), path: '/' }); // Set path to '/' to match the original cookie
+    
+    
   }
   

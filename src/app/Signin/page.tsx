@@ -36,8 +36,11 @@ const Signin = () => {
           window.location.href = result.redirect; } 
   
       setresponse(result.message)
-    
+      console.log(response)
      
+    }
+    else{
+      setresponse(result.message)
     }
   }}
 }

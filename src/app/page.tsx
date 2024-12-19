@@ -3,10 +3,15 @@
 
 
 export default function Home() {
-const handlelogout = ()=>{
-  fetch("/api/logout")
-  window.location.href ="/Signup"
-}
+  const handlelogout = async () => {
+    const res = await fetch("/api/logout", { method: "POST" });
+    if (res.ok) {
+
+        console.log("Successfully logged out");
+    } else {
+        console.error("Logout failed");
+    }
+};
 return(
   <>
   <div>AI APP</div>

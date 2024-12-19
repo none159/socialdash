@@ -1,8 +1,9 @@
 
 import localFont from "next/font/local";
 import "./globals.css";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
+import Navbar from "@/app/components/navbar";
+import Footer from "@/app/components/footer";
+import { EdgeStoreProvider } from "@/app/lib/edgestore";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -35,8 +36,11 @@ export default function RootLayout({
       <body
         className="bg-gray-900 font-sans"
       >
+
          <Navbar />
+         <EdgeStoreProvider>
         {children}
+        </EdgeStoreProvider>
         <Footer/>
       </body>
     </html>

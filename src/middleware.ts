@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { decrypt, updatesession } from "./lib/lib";
+import { decrypt, updatesession } from "./app/lib/lib";
 
 export default async function middleware(request: NextRequest){
+    const { pathname } = request.nextUrl;
+
+
+    const excludePaths = ['/verify-email'];  
+  
+  
+    if (excludePaths.includes(pathname)) {
+      return NextResponse.next();  
+    }
     const session = request.cookies.get("session")?.value
     const isloginpage = request.nextUrl.pathname != "/Signin"
     const isregisterpage = request.nextUrl.pathname != "/Signup"
