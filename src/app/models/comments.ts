@@ -1,27 +1,36 @@
 import mongoose,{models, Schema} from "mongoose"
 
-const groupMessageSchema = new Schema({
+
+const CommentsSchema = new Schema({
     groupId: {
       type: String,
-      ref:"Group",
+      ref:"group",
       required: true, 
+    },
+    postId:{
+        type:String,
+        ref:"posts",
+        requierd:true
     },
      userId: {
       type: String,
       required: true,
-      unique: true, 
       trim: true,
     },
-    message: {
+    comment: {
         type: String,
         required: true,
         trim: true,
+      },
+      likes: {
+        type: Number,
+        default: 0,
       },
     createdAt: {
       type: Date,
       default: Date.now,
     }
   });
-const GroupMessage = models.GroupMessage || mongoose.model("GroupMessage",groupMessageSchema)
+const Comments = models.Comments || mongoose.model("Comments",CommentsSchema)
 
-export default GroupMessage;
+export default Comments;

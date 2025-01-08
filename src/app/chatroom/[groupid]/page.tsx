@@ -1,9 +1,9 @@
 'use client';
 
 import Post from '@/app/components/post';
+import { useEdgeStore } from '@/app/lib/edgestore';
 import { useParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface Grouptype {
   _id: string;
@@ -15,23 +15,31 @@ interface Grouptype {
   createdAt: Date;
 }
 
+interface PostType {
+  _id: string;
+  text: string;
+  image:string;
+  groupId: string;
+  userId: string;
+  createdAt: Date;
+}
+
 const Chatroom = () => {
   const { groupid } = useParams();
   const [session, setSession] = useState<string | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const { edgestore } = useEdgeStore();
   const [text, setText] = useState("");
-  const [messages, setMessages] = useState<string[]>([]); // State to store chat messages
+  const [posts, setPosts] = useState<PostType[]>([]);
   const [resdata, setResData] = useState<Grouptype>();
   const [showSettings, setShowSettings] = useState(false);
+  const [selectedImg, setSelectedImg] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchSession = async () => {
     try {
       const res = await fetch("/api/session");
-
-      if (!res.ok) {
-        throw new Error(`Error fetching session: ${res.statusText}`);
-      }
-
+      if (!res.ok) throw new Error(`Error fetching session: ${res.statusText}`);
       const data = await res.json();
       setSession(data.session);
     } catch (error) {
@@ -41,121 +49,149 @@ const Chatroom = () => {
 
   const fetchData = async () => {
     try {
-      const id = groupid;
       const res = await fetch("/api/grouplist/byname", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: groupid }),
       });
-
-      if (!res.ok) {
-        throw new Error(`Error fetching data: ${res.statusText}`);
-      }
-
+      if (!res.ok) throw new Error(`Error fetching data: ${res.statusText}`);
       const data = await res.json();
-      if (data) {
-        setResData(data.message._doc);
-      }
+      setResData(data.message._doc);
     } catch (error) {
       console.error("Fetch error:", error);
     }
   };
 
-  useEffect(() => {
-    const newSocket = io("http://localhost:4000");
-    setSocket(newSocket);
-
-    newSocket.on("connect", () => {
-        console.log("Socket connected:", newSocket.id);
-    });
-
-    newSocket.on("new-message", (message) => {
-        console.log("Received new message:", message);
-        setMessages((prevMessages) => [...prevMessages, message.text]);
-    });
-
-    return () => {
-        newSocket.disconnect();
-        console.log("Socket disconnected");
-    };
-}, []);
-
-  const sendMessage = () => {
-    if (!socket || !text) return;
-    const message = { text, session, groupid };
-    socket.emit("new-message", message);
-    setMessages((prevMessages) => [...prevMessages, text]); // Add the sent message to the state
-    setText(""); // Clear input field after sending
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId: groupid }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPosts(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    if (socket && groupid) {
-      socket.emit('join-chat', groupid);
-    }
-  }, [socket, groupid]);
-
-  useEffect(() => {
     fetchSession();
-    if (session && socket) {
-      socket.emit("addNewUser", session); // Send session to server
-    }
-  }, [socket, session]);
-
-  useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (groupid !== "") setInterval(()=>fetchPosts(),5000)
+  }, [groupid]);
+
+  const sendMessage = async () => {
+    if (!text && !file) return;
+
+    try {
+      let imageUrl = "";
+      if (file) {
+        const imgRes = await edgestore.myPublicImages.upload({ file });
+        imageUrl = imgRes.url;
+      }
+
+      const res = await fetch("/api/posts/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId: groupid, text,imageurl: imageUrl }),
+      });
+
+      if (!res.ok) throw new Error(`Error sending message: ${res.statusText}`);
+      setText("");
+      setFile(null);
+      setSelectedImg(""); // Clear the preview
+    } catch (error) {
+      console.error("Send message error:", error);
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = event.target.files?.[0];
+    if (uploadedFile) {
+      setFile(uploadedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => setSelectedImg(reader.result as string);
+      reader.readAsDataURL(uploadedFile);
+    }
+  };
 
   return (
     <section className="relative top-[250px] grid gap-[100px] place-content-center">
       {resdata?.title ? (
         <h2 className="text-gray-600 m-auto text-4xl border border-gray-600 px-[30px] py-[10px]">
-          {resdata?.title}
+          {resdata.title}
         </h2>
       ) : (
         <h2 className="text-gray-600 m-auto text-4xl">Loading...</h2>
       )}
 
-      <div className="grid relative top-[100px] justify-between items-center w-full">
-        <button
-          className="text-white text-4xl p-2 hover:bg-gray-700 rounded-md focus:outline-none"
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          {showSettings ? '✖' : '☰'}
-        </button>
-
-        <div
-          className={`transition-all duration-300 ease-in-out absolute top-[55px] bg-gray-900 text-white shadow-black p-4 w-64 rounded-lg shadow-lg ${showSettings ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}
-        >
-          {showSettings && (
-            <ul className='grid gap-5'>
-              <li className='cursor-pointer hover:text-gray-500 duration-300 ease-in-out transition-all'>Settings</li>
-              <li className='cursor-pointer hover:text-gray-500 duration-300 ease-in-out transition-all'>Privacy</li>
-              <li className='cursor-pointer hover:text-gray-500 duration-300 ease-in-out transition-all'>Leave</li>
-            </ul>
-          )}
+      <div className="w-[1200px] p-4 text-white bg-gray-800  rounded mb-4">
+        {/* Post Form */}
+        <textarea
+          value={text}
+          
+          onChange={(e) => setText(e.target.value)}
+          className="w-full h-[100px] resize-none p-2 bg-gray-800 outline-none border-none rounded"
+          placeholder="What's on your mind?"
+        ></textarea>
+        {selectedImg && (
+          <div className="mt-4">
+            <img
+              src={selectedImg}
+              alt="Selected"
+              className="w-[300px] h-[300px] object-cover rounded-lg"
+            />
+          </div>
+        )}
+        <div className="mt-2">
+          <label
+            htmlFor="imageUpload"
+            className="cursor-pointer flex items-center gap-2 text-gray-600"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 10.5L12 15m0 0l-4.5-4.5M12 15V3m4.5 7.5h4.125a1.125 1.125 0 011.125 1.125v9.75A1.125 1.125 0 0120.625 22.5H3.375A1.125 1.125 0 012.25 21.375v-9.75a1.125 1.125 0 011.125-1.125H7.5"
+              />
+            </svg>
+            Add Photo
+          </label>
+          <input
+            id="imageUpload"
+            type="file"
+            accept="image/*"
+            onChange={(e)=>handleFileChange(e)}
+            className="hidden"
+          />
         </div>
+        <button
+          onClick={sendMessage}
+          className="mt-2 bg-gray-600 px-[40px] hover:bg-white duration-[350ms] ease-in-out hover:text-gray-600 text-white p-2 rounded"
+        >
+          Post
+        </button>
       </div>
 
-      {/* Message Display */}
-      <div className="w-[1200px] h-[400px] p-4 bg-gray-800 text-white shadow-xl rounded overflow-y-auto">
-        {messages.map((msg, index) => (
-          <p key={index} className="mb-2">
-            {msg}
-          </p>
-        ))}
+      {/* Posts Display */}
+      <div className="w-full h-[200vh] p-4 text-white rounded overflow-hidden overflow-y-scroll " style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {Array.isArray(posts) &&
+          posts.map((post) => <Post key={post._id} post={post} />)}
       </div>
-
-      {/* Input and Send Button */}
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        className="border rounded p-2"
-      />
-      <button onClick={sendMessage} className="bg-blue-500 text-white p-2 rounded">
-        Send
-      </button>
     </section>
   );
 };
