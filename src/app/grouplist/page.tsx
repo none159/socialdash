@@ -11,6 +11,7 @@ const Grouplist = () => {
           const data = await res.json(); 
           setresdata(data.message)
      
+     
          }
     }
     const handlejoin = async (id:string)=>{
@@ -51,7 +52,7 @@ const Grouplist = () => {
      })
         :""
 }
-{resdata! &&<h2 className="text-gray-700 relative top-[100px]">No Group Available Right Now.</h2>}
+{resdata! && resdata.length==0 ?<h2 className="text-gray-700 relative top-[100px]">No Group Available Right Now.</h2>:""}
 </div>
 
    </section>

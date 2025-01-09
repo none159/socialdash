@@ -55,7 +55,7 @@ const mygroups = () => {
      })
         :""
 }
-{resdata! &&<h2 className="text-gray-700 relative top-[100px]">Group Inventory Is Empty . Join Some Groups.</h2>}
+{!resdata! &&<h2 className="text-gray-700 relative top-[100px]">Group Inventory Is Empty   . Join Some Groups.</h2>}
 </div>
    </section>
   )
