@@ -15,7 +15,7 @@ interface Grouptype {
 
 const Description = () => {
   const [resdata, setresdata] = useState<Grouptype>();
-  const [members, setmembers] = useState<any>();
+  const [members, setmembers] = useState();
   const { id } = useParams();
 
   useEffect(() => {

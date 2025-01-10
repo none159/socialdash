@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import Image from 'next/image'
 interface PostType {
   _id: string;
   groupId: string;
@@ -194,8 +194,8 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
   return (
     <div className="mb-[100px] p-6 bg-gray-800 text-white shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
       <div className="flex items-center mb-4">
-        <img
-          src={user ? user.image : ""}
+        <Image
+          src={user?.image||""}
           className="w-10 h-10 bg-gray-600 rounded-full flex-shrink-0 mr-3"
           alt={user ? `${user.username}'s profile` : "User"}
         />
