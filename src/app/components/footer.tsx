@@ -42,7 +42,7 @@ useEffect(() => {
          <Link href="/Ai"><li className="cursor-pointer list-none hover:underline">AI Chat</li></Link>
           <Link href="/creategroup"><li className="cursor-pointer list-none hover:underline">Create Group</li></Link>
           {!isloggedin ?<Link href="/Signin"><li className="cursor-pointer list-none hover:underline">Sign In</li></Link>:""}
-          {isloggedin ?<Link href="/logout"><li className="cursor-pointer list-none hover:underline">logout</li></Link>:""}
+          {isloggedin ?<button onClick={handlelogout}><li className="cursor-pointer list-none hover:underline">logout</li></button>:""}
         </div>
         <div className="flex space-x-4 size">
           <a

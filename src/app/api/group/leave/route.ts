@@ -33,7 +33,8 @@ export async function POST(req: Request) {
     await GroupMember.deleteOne({ groupId: id, userId: username });
 
     return NextResponse.json({ message: "User left group" }, { status: 200 });
-  } catch (_) {
+  } catch (error) {
+    console.error(error)
     return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

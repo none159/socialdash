@@ -1,199 +1,87 @@
-'use client';
+import { useState, useEffect, useRef } from "react";
+import { HfInference } from "@huggingface/inference";
+import DOMPurify from "dompurify";
 
-import Post from '@/app/components/post';
-import { useEdgeStore } from '@/app/lib/edgestore';
-import { useParams } from 'next/navigation';
-import React, { useEffect, useState, useRef } from 'react';
+export const Aipage = () => {
+  const [prompt, setPrompt] = useState<string>(""); // Stores user's input
+  const [conversation, setConversation] = useState<string>(""); // Stores full conversation
+  const [overflowStyle, setOverflowStyle] = useState<"hidden" | "auto">("hidden"); // Controls overflow
+  const conversationRef = useRef<HTMLDivElement | null>(null); // Ref for conversation div
 
-interface Grouptype {
-  _id: string;
-  creator: string;
-  title: string;
-  description: string;
-  image: string;
-  roomId: string;
-  createdAt: Date;
-}
+  const inference = new HfInference("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");
 
-interface PostType {
-  _id: string;
-  text: string;
-  image:string;
-  groupId: string;
-  userId: string;
-  createdAt: Date;
-}
-
-const Chatroom = () => {
-  const { groupid } = useParams();
-  const [session, setSession] = useState<string | null>(null);
-  const { edgestore } = useEdgeStore();
-  const [text, setText] = useState("");
-  const [posts, setPosts] = useState<PostType[]>([]);
-  const [resdata, setResData] = useState<Grouptype>();
-  const [showSettings, setShowSettings] = useState(false);
-  const [selectedImg, setSelectedImg] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const fetchSession = async () => {
+  // Fetch data from the bot
+  const fetchData = async (prompt: string, e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     try {
-      const res = await fetch("/api/session");
-      if (!res.ok) throw new Error(`Error fetching session: ${res.statusText}`);
-      const data = await res.json();
-      setSession(data.session);
-    } catch (error) {
-      console.error("Session fetch error:", error);
-    }
-  };
+      let fullText = ""; // Variable to accumulate the full response
 
-  const fetchData = async () => {
-    try {
-      const res = await fetch("/api/grouplist/byname", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: groupid }),
-      });
-      if (!res.ok) throw new Error(`Error fetching data: ${res.statusText}`);
-      const data = await res.json();
-      setResData(data.message._doc);
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
-
-  const fetchPosts = async () => {
-    try {
-      const res = await fetch("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: groupid }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPosts(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchSession();
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (groupid !== "") setInterval(()=>fetchPosts(),5000)
-  }, [groupid]);
-
-  const sendMessage = async () => {
-    if (!text && !file) return;
-
-    try {
-      let imageUrl = "";
-      if (file) {
-        const imgRes = await edgestore.myPublicImages.upload({ file });
-        imageUrl = imgRes.url;
+      for await (const chunk of inference.chatCompletionStream({
+        model: "meta-llama/Llama-3.2-3B-Instruct",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 500,
+      })) {
+        const newText = chunk.choices[0]?.delta?.content || ""; // Get the new part of the text
+        fullText += newText; // Accumulate the text
       }
 
-      const res = await fetch("/api/posts/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: groupid, text,imageurl: imageUrl }),
-      });
+      // Update conversation: include user's input and bot's response
+      const newConversation = `
+        <span class="text-green-600">User:</span> ${prompt}<br>
+        <span class="text-yellow-400">Bot:</span> ${fullText}<br>
+      `;
 
-      if (!res.ok) throw new Error(`Error sending message: ${res.statusText}`);
-      setText("");
-      setFile(null);
-      setSelectedImg(""); // Clear the preview
+      // Sanitize the conversation before updating state
+      setConversation((prev) => prev + DOMPurify.sanitize(newConversation));
+
+      // Clear the prompt input after sending
+      setPrompt("");
     } catch (error) {
-      console.error("Send message error:", error);
+      console.error("Error fetching the data:", error);
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = event.target.files?.[0];
-    if (uploadedFile) {
-      setFile(uploadedFile);
-      const reader = new FileReader();
-      reader.onloadend = () => setSelectedImg(reader.result as string);
-      reader.readAsDataURL(uploadedFile);
+  // Check if content exceeds div height and update overflow style
+  useEffect(() => {
+    const conversationDiv = conversationRef.current;
+
+    if (conversationDiv && conversationDiv.scrollHeight > conversationDiv.clientHeight) {
+      setOverflowStyle("auto"); // Show scroll if content exceeds height
+    } else {
+      setOverflowStyle("hidden"); // Hide scroll if content fits
     }
-  };
+  }, [conversation]);
 
   return (
-    <section className="relative top-[250px] grid gap-[100px] place-content-center">
-      {resdata?.title ? (
-        <h2 className="text-gray-600 m-auto text-4xl border border-gray-600 px-[30px] py-[10px]">
-          {resdata.title}
-        </h2>
-      ) : (
-        <h2 className="text-gray-600 m-auto text-4xl">Loading...</h2>
-      )}
-
-      <div className="w-[1200px] p-4 text-white bg-gray-800  rounded mb-4">
-        {/* Post Form */}
-        <textarea
-          value={text}
-          
-          onChange={(e) => setText(e.target.value)}
-          className="w-full h-[100px] resize-none p-2 bg-gray-800 outline-none border-none rounded"
-          placeholder="What's on your mind?"
-        ></textarea>
-        {selectedImg && (
-          <div className="mt-4">
-            <img
-              src={selectedImg}
-              alt="Selected"
-              className="w-[300px] h-[300px] object-cover rounded-lg"
-            />
-          </div>
-        )}
-        <div className="mt-2">
-          <label
-            htmlFor="imageUpload"
-            className="cursor-pointer flex items-center gap-2 text-gray-600"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16.5 10.5L12 15m0 0l-4.5-4.5M12 15V3m4.5 7.5h4.125a1.125 1.125 0 011.125 1.125v9.75A1.125 1.125 0 0120.625 22.5H3.375A1.125 1.125 0 012.25 21.375v-9.75a1.125 1.125 0 011.125-1.125H7.5"
-              />
-            </svg>
-            Add Photo
-          </label>
-          <input
-            id="imageUpload"
-            type="file"
-            accept="image/*"
-            onChange={(e)=>handleFileChange(e)}
-            className="hidden"
-          />
-        </div>
-        <button
-          onClick={sendMessage}
-          className="mt-2 bg-gray-600 px-[40px] hover:bg-white duration-[350ms] ease-in-out hover:text-gray-600 text-white p-2 rounded"
+    <section className="relative top-[100px]">
+      <div className="grid place-items-center gap-10">
+        <div
+          ref={conversationRef} // Ref for the conversation div
+          className="w-[1000px] h-[1000px]  p-4 bg-gray-800 text-white  shadow-xl rounded" // Fixed height and width
+          style={{ overflowY: overflowStyle }} // Dynamic overflow based on content
         >
-          Post
-        </button>
-      </div>
-
-      {/* Posts Display */}
-      <div className="w-full h-[200vh] p-4 text-white rounded overflow-hidden overflow-y-scroll " style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        {Array.isArray(posts) &&
-          posts.map((post) => <Post key={post._id} post={post} />)}
+          {/* Render sanitized conversation */}
+          <div dangerouslySetInnerHTML={{ __html: conversation }} />
+        </div>
+        <div >
+          <form onSubmit={(e)=>fetchData(prompt,e)} className="flex gap-10">
+          <input
+            className="w-[880px] rounded bg-gray-700 text-white py-2 outline-none border-none"
+            onChange={(e) => setPrompt(e.target.value)}
+            value={prompt}
+          />
+          <button
+            className="bg-gray-700 px-[20px] rounded py-[10px] duration-[350ms] ease-in-out transition-all text-white hover:bg-white hover:text-gray-700"
+            type="submit"
+            
+          >
+            Send
+          </button>
+          </form>
+        </div>
       </div>
     </section>
   );
-};
+}
 
-export default Chatroom;
+export default Aipage;

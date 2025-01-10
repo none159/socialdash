@@ -7,10 +7,6 @@ import bcrypt from "bcrypt";
 import nodemailer from 'nodemailer';
 import { encrypt } from "@/app/lib/lib";
 
-interface UserPayload {
-  username: string;
-}
-
 interface UpdateData {
   username?: string;
   email?: string;
