@@ -2,7 +2,7 @@ import { connectMongoDB } from "@/app/lib/mongodb";
 import Group from "@/app/models/group";
 import GroupMember from "@/app/models/groupmembers";
 import { jwtVerify } from "jose";
-import { Mongoose } from "mongoose";
+
 import { cookies } from "next/headers";
 
 import {NextResponse} from "next/server"
@@ -13,7 +13,7 @@ interface GroupType {
     image: string;
     member: string;
   }
-export async function GET(req : Request){
+export async function GET(_ : Request){
     try { 
         await connectMongoDB();
         const session =  cookies().get("session")?.value

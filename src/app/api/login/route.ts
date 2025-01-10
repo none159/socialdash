@@ -5,7 +5,6 @@ import bcrypt from 'bcrypt';
 import { encrypt } from "@/app/lib/lib";
 import { cookies } from "next/headers";
 import nodemailer from 'nodemailer';
-import { redirect } from "next/navigation";
 import { SignJWT } from "jose";
 export async function POST(req : Request){
     try { const formData = await req.formData();
@@ -88,6 +87,7 @@ export async function POST(req : Request){
        }
        else{  return NextResponse.json({message:"Wrong Password"},{status:500})}
     } catch (error) {
+      console.error(error);
         return NextResponse.json({message:"Something Wrong"},{status:500})
     }
 }

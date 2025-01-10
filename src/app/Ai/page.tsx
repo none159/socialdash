@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { HfInference } from "@huggingface/inference";
 import DOMPurify from "dompurify";
 
-export const aipage = () => {
+export const Aipage = () => {
   const [prompt, setPrompt] = useState<string>(""); // Stores user's input
   const [conversation, setConversation] = useState<string>(""); // Stores full conversation
   const [overflowStyle, setOverflowStyle] = useState<"hidden" | "auto">("hidden"); // Controls overflow
@@ -85,4 +85,4 @@ export const aipage = () => {
   );
 }
 
-export default aipage;
+export default Aipage;

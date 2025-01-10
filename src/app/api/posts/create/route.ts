@@ -1,13 +1,19 @@
 import { connectMongoDB } from "@/app/lib/mongodb";
 import Posts from "@/app/models/posts";
-import { jwtVerify } from "jose";
+import { jwtVerify, JWTPayload } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+
+interface JwtPayload extends JWTPayload {
+    User: {
+        username: string;
+    };
+}
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { groupId, text ,imageurl} = body;
+        const { groupId, text, imageurl }: { groupId: string; text: string; imageurl?: string } = body;
 
         if (!groupId || !text) {
             return NextResponse.json({ message: "Invalid input" }, { status: 400 });
@@ -31,30 +37,34 @@ export async function POST(req: Request) {
             algorithms: ["HS256"],
         });
 
-        const {username} : any = payload.User;
-        if (!username) {
+        // Cast payload to JwtPayload after verification
+        const { User } = payload as JwtPayload;
+
+        if (!User || !User.username) {
             return NextResponse.json({ message: "Invalid token payload" }, { status: 401 });
         }
-        let post
-        if(imageurl){
-             post = await Posts.create({
+
+        const username = User.username;
+
+        let post;
+        if (imageurl) {
+            post = await Posts.create({
                 groupId,
                 userId: username,
-                image:imageurl,
+                image: imageurl,
+                text,
+            });
+        } else {
+            post = await Posts.create({
+                groupId,
+                userId: username,
                 text,
             });
         }
-        else{
-         post = await Posts.create({
-            groupId,
-            userId: username,
-            text,
-        });
-    }
 
         return NextResponse.json({ message: "Post created successfully", post }, { status: 200 });
-    } catch (error: any) {
-        console.error("Error in POST handler:", error.message);
-        return NextResponse.json({ message: "Something went wrong", error: error.message }, { status: 500 });
+    } catch (error) {
+        console.error("Error in POST handler:", (error as Error).message);
+        return NextResponse.json({ message: "Something went wrong", error: (error as Error).message }, { status: 500 });
     }
 }

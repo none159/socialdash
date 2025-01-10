@@ -2,7 +2,6 @@ import { connectMongoDB } from "@/app/lib/mongodb";
 import Group from "@/app/models/group";
 import GroupMember from "@/app/models/groupmembers";
 import { jwtVerify } from "jose";
-import mongoose from "mongoose";
 import { cookies } from "next/headers";
 import {NextResponse} from "next/server"
 import { v4 as uuidv4 } from 'uuid';
@@ -42,6 +41,6 @@ export async function POST(req : Request){
        
     } catch (error) {
 
-        return NextResponse.json({message:"Something Wrong"},{status:500})
+        return NextResponse.json({message:error},{status:500})
     }
 }
