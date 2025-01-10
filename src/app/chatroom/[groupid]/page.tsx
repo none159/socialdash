@@ -1,3 +1,4 @@
+"use client"
 import { useState, useEffect, useRef } from "react";
 import { HfInference } from "@huggingface/inference";
 import DOMPurify from "dompurify";
