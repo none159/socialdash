@@ -5,6 +5,10 @@ import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import {NextResponse} from "next/server"
 import { v4 as uuidv4 } from 'uuid';
+interface UserPayload {
+    username: string;
+  }
+  
 export async function POST(req : Request){
     try { const formData = await req.formData();
         await connectMongoDB();
@@ -30,7 +34,8 @@ export async function POST(req : Request){
          roomid= uuidv4()
         
        }
-       const {username} : any  = payload.User
+       const userPayload = (payload.User as unknown) as UserPayload;
+       const username = userPayload.username;
         await Group.create({creator:username,...data,roomId:roomid})  
         await GroupMember.create({userId:username,groupId: roomid,Role:"admin"})
         return NextResponse.json({message:"success"},{status:200})

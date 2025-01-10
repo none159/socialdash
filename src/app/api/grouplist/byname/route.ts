@@ -4,7 +4,7 @@ import GroupMember from "@/app/models/groupmembers";
 
 import {NextResponse} from "next/server"
 
-export async function POST(req : Request,){
+export async function POST(req : Request){
     try {  await connectMongoDB();
         
       

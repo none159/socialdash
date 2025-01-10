@@ -1,8 +1,8 @@
 import { connectMongoDB } from "@/app/lib/mongodb";
-import Group from "@/app/models/group";
+
 import GroupMember from "@/app/models/groupmembers";
 import { jwtVerify } from "jose";
-import mongoose from "mongoose";
+
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -34,6 +34,7 @@ export async function POST(req: Request) {
     await GroupMember.create({ groupId: id, userId: username });
     return NextResponse.json({ message: "User joined group" }, { status: 200 });
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ message: "Something Wrong" }, { status: 500 });
   }
 }

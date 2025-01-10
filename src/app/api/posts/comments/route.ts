@@ -1,6 +1,5 @@
 import { connectMongoDB } from "@/app/lib/mongodb";
 import Comments from "@/app/models/comments";
-import Posts from "@/app/models/posts";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -9,7 +8,7 @@ export async function POST(req: Request) {
     try {
       await connectMongoDB();
       const body = await req.json();
-      const { _id, groupId, userId,comment } = body;
+      const { _id, groupId,comment } = body;
   
       if (!comment) {
         return NextResponse.json({ message: "Comment cannot be empty" }, { status: 400 });
@@ -21,7 +20,7 @@ export async function POST(req: Request) {
     const { payload } = await jwtVerify(session!, key, {
      algorithms: ["HS256"],
     })
-    const {username} : any  = payload.User
+    const { username } = payload.User as { username: string };
       const newComment = await Comments.create({
         groupId,
         postId: _id,

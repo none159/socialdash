@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Create the user with the verification token, unverified status, and token expiry time
-    const newUser = await User.create({
+   await User.create({
       ...data,
       verificationToken,
       tokenExpiry,
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       text: `Hello ${firstname} ${lastname},\n\nPlease click the following link to verify your email: \n${verificationLink}`,
     };
 
-    transporter.sendMail(mailOptions, (error: any, info: any) => {
+    transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
       } else {

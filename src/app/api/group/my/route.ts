@@ -17,7 +17,7 @@ interface GroupType {
   member: string;
 }
 
-export async function GET(_: Request) {
+export async function GET() {
   try {
     await connectMongoDB();
 

@@ -2,12 +2,11 @@ import { connectMongoDB } from "@/app/lib/mongodb";
 import Comments from "@/app/models/comments";
 import Likes from "@/app/models/likes";
 import Posts from "@/app/models/posts";
-import User from "@/app/models/user";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     // Connect to MongoDB
     await connectMongoDB();
@@ -23,11 +22,11 @@ export async function GET(req: Request) {
       throw new Error("SECRETKEY environment variable is missing");
     }
     const key = new TextEncoder().encode(secretKey);
-    const { payload }: any = await jwtVerify(session, key, {
+    const { payload } = await jwtVerify(session, key, {
       algorithms: ["HS256"],
     });
 
-    const { username } = payload.User;
+    const { username } = payload.User as { username: string };
     if (!username) {
       return NextResponse.json({ message: "Invalid token payload" }, { status: 400 });
     }

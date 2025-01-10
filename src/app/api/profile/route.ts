@@ -3,7 +3,7 @@ import user from "@/app/models/user";
 import {NextResponse} from "next/server"
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
-export async function GET(req : Request){
+export async function GET(){
     try {
         await connectMongoDB();
         const session =  cookies().get("session")?.value
@@ -12,7 +12,7 @@ export async function GET(req : Request){
         const { payload } = await jwtVerify(session!, key, {
          algorithms: ["HS256"],
         })
-        const {username,email} : any  = payload.User
+        const { email } = payload.User as {email:string };
         const User = await user.findOne({email})
         if(User){
         return NextResponse.json({message:User},{status:200})
@@ -24,6 +24,7 @@ export async function GET(req : Request){
      
 
     } catch (error) {
+        console.error(error)
         return NextResponse.json({message:"Something Wrong"},{status:500})
     }
 }

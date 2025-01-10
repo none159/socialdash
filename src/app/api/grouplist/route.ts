@@ -13,7 +13,11 @@ interface GroupType {
     image: string;
     member: string;
   }
-export async function GET(_ : Request){
+  interface UserPayload {
+    username: string;
+  }
+  
+export async function GET(){
     try { 
         await connectMongoDB();
         const session =  cookies().get("session")?.value
@@ -22,7 +26,8 @@ export async function GET(_ : Request){
         const { payload } = await jwtVerify(session!, key, {
          algorithms: ["HS256"],
         })
-        const {username} :any = payload.User
+        const userPayload = (payload.User as unknown) as UserPayload;
+        const username = userPayload.username;
         const groups: GroupType[] = [];
    
         const grouplist = await Group.find({}).exec()

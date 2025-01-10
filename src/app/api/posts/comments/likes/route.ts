@@ -1,6 +1,5 @@
 import { connectMongoDB } from "@/app/lib/mongodb";
 import Comments from "@/app/models/comments";
-import Likes from "@/app/models/likes"; // Ensure the 'Likes' model is set for comments
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -93,14 +92,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: "Invalid Comment ID" }, { status: 400 });
     }
 
-    const session = cookies().get("session")?.value;
-    const secretkey = process.env.SECRETKEY!;
-    const key = new TextEncoder().encode(secretkey);
-    const { payload } = await jwtVerify(session!, key, { algorithms: ["HS256"] });
-
-    // Type assertion for payload.User
-    const { username } = payload.User as { username: string };
-
+  
     // Find the comment
     const comment = await Comments.findById(commentId);
 

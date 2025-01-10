@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const secretkey = process.env.SECRETKEY;
     const key = new TextEncoder().encode(secretkey);
     const { payload } = await jwtVerify(session!, key, { algorithms: ["HS256"] });
-    const { username } : any = payload.User; // Extract username from the token
+    const { username } = payload.User as { username: string }; // Extract username from the token
 
     // Fetch the post
     const post = await Posts.findById(postId);
@@ -91,7 +91,7 @@ export async function GET(req: Request) {
     const secretkey = process.env.SECRETKEY;
     const key = new TextEncoder().encode(secretkey);
     const { payload } = await jwtVerify(session!, key, { algorithms: ["HS256"] });
-    const { username } :any= payload.User;
+    const { username } = payload.User as { username: string };
 
     // Find the post
     const post = await Posts.findById(postId);
