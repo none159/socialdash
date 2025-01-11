@@ -1,21 +1,26 @@
 "use client"
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 
 const VerifyEmail = () => {
   const [message, setMessage] = useState<string>("");
- const [token,settoken]=useState("")
+  const [token, setToken] = useState<string>("");
 
+  // Extract the token from the URL on component mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    settoken(urlParams.get('token')!) 
+    const tokenParam = urlParams.get("token");
+    if (tokenParam) {
+      setToken(tokenParam);
+    }
+  }, []);
 
+  // Verify email when token is available
+  useEffect(() => {
     if (token) {
-      // Call the verification API
       fetch(`/api/verify-email?token=${token}`)
         .then((res) => res.json())
         .then((data) => setMessage(data.message))
-        .catch((error) => setMessage("Error verifying email"));
+        .catch(() => setMessage("Error verifying email"));
     }
   }, [token]);
 

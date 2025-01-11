@@ -168,7 +168,7 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
 
   useEffect(() => {
     fetchUser();
-    const intervalId = setInterval(fetchComments, 3000);
+    const intervalId = setInterval(()=>fetchComments(), 3000);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -208,7 +208,7 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
       </div>
       <p className="text-gray-300 mb-4">{text}</p>
       {image && (
-        <img
+        <Image
           src={image}
           className="w-[500px] h-[400px] rounded my-5 object-contain"
           alt="Uploaded"

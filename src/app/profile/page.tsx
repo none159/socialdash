@@ -1,7 +1,9 @@
-"use client"
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { useEdgeStore } from "../lib/edgestore";
 import { FaSpinner, FaTimes, FaUpload } from "react-icons/fa";
+import Image from "next/image";
 
 interface User {
   firstname: string;
@@ -12,11 +14,19 @@ interface User {
   image?: string;
 }
 
+interface Updates {
+  firstname?: string;
+  lastname?: string;
+  username?: string;
+  oldpassword?: string;
+  email?: string;
+  password?: string;
+  imageUrl?: string;
+}
+
 const Profile = () => {
-  const [resdata, setResData] = useState<User | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImg, setSelectedImg] = useState<string>("");
-
   const [loading, setloading] = useState(false);
   const [firstname, setFirstname] = useState<string>("");
   const [lastname, setLastname] = useState<string>("");
@@ -47,7 +57,7 @@ const Profile = () => {
   };
 
   const handleChanges = async () => {
-    const updates: any = {};
+    const updates: Updates = {};
     if (file) {
       const res = await edgestore.myPublicImages.upload({ file: file! });
       const imageUrl = res.url;
@@ -64,7 +74,7 @@ const Profile = () => {
     if (password) updates.password = password;
 
     try {
-      if (updates) {
+      if (Object.keys(updates).length > 0) {
         const response = await fetch("/api/profile/update", {
           method: "POST",
           body: JSON.stringify(updates),
@@ -74,7 +84,6 @@ const Profile = () => {
         if (response.ok) {
           const data = await response.json();
           setisupdated(true);
-          setResData(data.user);
           setpassword("");
           setoldpassword("");
           setemail("");
@@ -94,7 +103,6 @@ const Profile = () => {
       if (res.ok) {
         setloading(false);
         const data = await res.json();
-        setResData(data.message);
         setusername(data.message.username);
         setFirstname(data.message.firstname);
         setLastname(data.message.lastname);
@@ -128,7 +136,7 @@ const Profile = () => {
             {loading ? (
               <FaSpinner className="text-gray-600 text-4xl animate-spin absolute inset-0 m-auto" />
             ) : selectedImg ? (
-              <img
+              <Image
                 src={selectedImg}
                 alt="Selected"
                 className="object-cover h-full w-full"
@@ -154,14 +162,12 @@ const Profile = () => {
               }}
             />
           )}
-          <div className=" flex gap-2 mx-auto text-2xl text-gray-700">
-          <h2>{firstname}</h2>
-          <h2>{lastname}</h2>
+          <div className="flex gap-2 mx-auto text-2xl text-gray-700">
+            <h2>{firstname}</h2>
+            <h2>{lastname}</h2>
           </div>
         </div>
-
         <div className="w-full grid gap-6">
-        
           <div>
             <label className="block text-gray-700 text-lg">Email:</label>
             <input
