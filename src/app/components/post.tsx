@@ -167,11 +167,16 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
   };
 
   useEffect(() => {
-    fetchUser();
-  },[])
-  useEffect(()=>{ const intervalId = setInterval(()=>fetchComments(), 3000);
-  return () => clearInterval(intervalId);
-}, [fetchComments]);
+    const initializeData = async () => {
+      await fetchUser();
+      await fetchComments();
+    };
+  
+    initializeData();
+  
+    const intervalId = setInterval(() => fetchComments(), 3000);
+    return () => clearInterval(intervalId);
+  }, [fetchComments]);
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
