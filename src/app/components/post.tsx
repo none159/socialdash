@@ -1,4 +1,4 @@
-import React, { useEffect, useInsertionEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from 'next/image'
 interface PostType {
   _id: string;
