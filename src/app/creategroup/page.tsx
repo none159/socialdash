@@ -8,7 +8,6 @@ const Creategroup = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const [selectedImg, setSelectedImg] = useState<string>("");
   const [f, setF] = useState<File>();
-  const [url, setUrl] = useState<{ url: string; thumbnailUrl: string }>();
   const { edgestore } = useEdgeStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,27 +31,36 @@ const Creategroup = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (f) {
+      if (formRef.current) {
+        const formData = new FormData(formRef.current);
 
-    
+        try {
+          const res = await edgestore.myPublicImages.upload({ file: f });
 
-    if (formRef.current) {
-      const formData = new FormData(formRef.current);
+          if (!res || !res.url || !res.thumbnailUrl) {
+            console.error("Invalid upload response", res);
+            return;
+          }
 
-      try {
-        const res = await edgestore.myPublicImages.upload({ file: f });
+          console.log("Uploaded image URL:", res.url);
 
-        if (!res || !res.url || !res.thumbnailUrl) {
-          console.error("Invalid upload response", res);
-          return;
+          formData.append("image", res.url);
+
+          const response = await fetch("/api/creategroup", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            console.error("Error creating group", await response.text());
+          }
+        } catch (err) {
+          console.error("Error during submission:", err);
         }
-
-        setUrl({
-          url: res.url,
-          thumbnailUrl: res.thumbnailUrl,
-        });
-
-        formData.append("image", res.url);
-
+      }
+    } else {
+      if (formRef.current) {
+        const formData = new FormData(formRef.current);
         const response = await fetch("/api/creategroup", {
           method: "POST",
           body: formData,
@@ -61,25 +69,8 @@ const Creategroup = () => {
         if (!response.ok) {
           console.error("Error creating group", await response.text());
         }
-      } catch (err) {
-        console.error("Error during submission:", err);
-      
+      }
     }
-    }
-  }
-  else{
-    if (formRef.current) {
-    const formData = new FormData(formRef.current);
-    const response = await fetch("/api/creategroup", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      console.error("Error creating group", await response.text());
-    }
-  }
-  }
   };
 
   return (

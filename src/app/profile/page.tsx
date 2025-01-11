@@ -5,15 +5,6 @@ import { useEdgeStore } from "../lib/edgestore";
 import { FaSpinner, FaTimes, FaUpload } from "react-icons/fa";
 import Image from "next/image";
 
-interface User {
-  firstname: string;
-  lastname: string;
-  username: string;
-  email: string;
-  password: string;
-  image?: string;
-}
-
 interface Updates {
   firstname?: string;
   lastname?: string;
@@ -102,13 +93,13 @@ const Profile = () => {
       const res = await fetch("/api/profile");
       if (res.ok) {
         setloading(false);
-        const data = await res.json();
-        setusername(data.message.username);
-        setFirstname(data.message.firstname);
-        setLastname(data.message.lastname);
-        setemail(data.message.email);
-        if (data.message?.image) {
-          setSelectedImg(data.message.image);
+        const { message } = await res.json();
+        setusername(message.username);
+        setFirstname(message.firstname);
+        setLastname(message.lastname);
+        setemail(message.email);
+        if (message?.image) {
+          setSelectedImg(message.image);
         }
       }
     } catch (error) {

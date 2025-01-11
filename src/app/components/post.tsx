@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Image from 'next/image'
+import Image from 'next/image';
+
 interface PostType {
   _id: string;
   groupId: string;
@@ -48,9 +49,7 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
     try {
       const res = await fetch("/api/posts/likes", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ postId: _id, groupId, action }),
       });
 
@@ -72,12 +71,11 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
     setLikedComments((prev) => ({ ...prev, [commentId]: newLikeState }));
 
     const action = newLikeState ? "like" : "unlike";
+
     try {
       const res = await fetch("/api/posts/comments/likes", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ commentId, postId: _id, action, groupId }),
       });
 
@@ -142,14 +140,13 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
   const handleComment = async () => {
     const res = await fetch("/api/posts/comments", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId: _id, groupId, comment }),
     });
 
     if (res.ok) {
       setComment("");
+      fetchComments(); // Update comments after posting
     } else {
       console.error("Failed to add comment");
     }
@@ -168,9 +165,8 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
 
   useEffect(() => {
     fetchUser();
-    const intervalId = setInterval(()=>fetchComments(), 3000);
-    return () => clearInterval(intervalId);
-  }, []);
+    fetchComments();
+  }, [fetchComments]); // Ensure fetchComments is included as a dependency
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
@@ -187,15 +183,15 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
         console.error("Error while fetching like status:", error);
       }
     };
-    const intervalId = setInterval(fetchLikeStatus, 3000);
-    return () => clearInterval(intervalId);
+
+    fetchLikeStatus();
   }, [_id]);
 
   return (
     <div className="mb-[100px] p-6 bg-gray-800 text-white shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
       <div className="flex items-center mb-4">
         <Image
-          src={user?.image||""}
+          src={user?.image || ""}
           className="w-10 h-10 bg-gray-600 rounded-full flex-shrink-0 mr-3"
           alt={user ? `${user.username}'s profile` : "User"}
         />
@@ -217,15 +213,7 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
       <div className="flex justify-between items-center text-gray-400">
         <button onClick={handleLike} className="flex items-center space-x-2 hover:text-gray-200 transition">
           <span>{likeCount}</span>
-          {liked ? (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="red" viewBox="0 0 24 24" className="w-6 h-6 transition-transform duration-300 transform scale-125">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3a5.49 5.49 0 014.5 2.09A5.49 5.49 0 0116.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21z" />
-            </svg>
-          )}
+          {liked ? "❤️" : "🤍"}
         </button>
         <button onClick={handleShare} className="hover:text-gray-200">
           Share
@@ -255,40 +243,17 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
             Comment
           </button>
 
-          {comments.length > 0 && (
-            <div className="mt-4 space-y-4">
-              {comments.map((comment) => (
-                <div key={comment._id} className="flex flex-col bg-gray-700 p-4 rounded-lg mb-4">
-                  <div className="flex justify-between">
-                    <div>
-                      <h4 className="font-semibold text-gray-100">
-                        {comment.userId}
-                      </h4>
-                      <p className="text-sm text-gray-400">
-                        {new Date(comment.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleCommentLike(comment._id)}
-                      className="flex items-center space-x-2 text-gray-400 hover:text-gray-200"
-                    >
-                      <span>{commentLikes[comment._id]}</span>
-                      {likedComments[comment._id] ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="red" viewBox="0 0 24 24" className="w-6 h-6">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-6 h-6">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3a5.49 5.49 0 014.5 2.09A5.49 5.49 0 0116.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21z" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                  <p className="text-gray-300 mt-2">{comment.comment}</p>
-                </div>
-              ))}
+          {comments.map((comment) => (
+            <div key={comment._id} className="mt-4 bg-gray-700 p-4 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-200">{comment.userId}</span>
+                <button onClick={() => handleCommentLike(comment._id)}>
+                  {likedComments[comment._id] ? "❤️" : "🤍"} {commentLikes[comment._id]}
+                </button>
+              </div>
+              <p className="text-gray-400 mt-2">{comment.comment}</p>
             </div>
-          )}
+          ))}
         </div>
       )}
     </div>
