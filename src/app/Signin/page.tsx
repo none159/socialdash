@@ -3,7 +3,6 @@ import React,{ useRef,useState} from 'react'
 import Link from 'next/link';
 
 const Signin = () => {
-
   const formRef=useRef<HTMLFormElement>(null)
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
