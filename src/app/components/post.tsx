@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from 'next/image'
 interface PostType {
   _id: string;
@@ -100,8 +100,30 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
     }
   };
 
+  const fetchComments = useCallback(async () => {
+    const res = await fetch(`/api/posts/comments?postId=${_id}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.comments)) {
+        setComments(data.comments);
+        fetchCommentLikeStatus(data.comments);
+      }
+    } else {
+      console.error("Failed to fetch comments");
+    }
+  }, [_id]);
+  
+  useEffect(() => {
 
+       fetchUser();
+       fetchComments();
+    
 
+  
+    const intervalId = setInterval(() => fetchComments(), 3000);
+    return () => clearInterval(intervalId);
+  }, []);
+  
   const fetchCommentLikeStatus = async (comments: CommentType[]) => {
     try {
       const likeStatuses: Record<string, boolean> = {};
@@ -156,19 +178,6 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
   };
 
   useEffect(() => {
-    const fetchComments = async () => {
-      const res = await fetch(`/api/posts/comments?postId=${_id}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.comments)) {
-          setComments(data.comments);
-          fetchCommentLikeStatus(data.comments);
-        }
-      } else {
-        console.error("Failed to fetch comments");
-      }
-    };
-  
     const initializeData = async () => {
       await fetchUser();
       await fetchComments();
@@ -178,8 +187,8 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
   
     const intervalId = setInterval(() => fetchComments(), 3000);
     return () => clearInterval(intervalId);
-  }, [_id]);
-  
+  }, [fetchComments]);
+
   useEffect(() => {
     const fetchLikeStatus = async () => {
       try {
