@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
 import Post from '@/app/components/post';
 import { useEdgeStore } from '@/app/lib/edgestore';
 import { useParams } from 'next/navigation';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 interface Grouptype {
   _id: string;
@@ -18,7 +19,7 @@ interface Grouptype {
 interface PostType {
   _id: string;
   text: string;
-  image:string;
+  image: string;
   groupId: string;
   userId: string;
   createdAt: Date;
@@ -26,47 +27,33 @@ interface PostType {
 
 const Chatroom = () => {
   const { groupid } = useParams();
-  const [session, setSession] = useState<string | null>(null);
-  const { edgestore } = useEdgeStore();
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
   const [posts, setPosts] = useState<PostType[]>([]);
   const [resdata, setResData] = useState<Grouptype>();
-  const [showSettings, setShowSettings] = useState(false);
-  const [selectedImg, setSelectedImg] = useState<string>("");
+  const [selectedImg, setSelectedImg] = useState<string>('');
   const [file, setFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const fetchSession = async () => {
-    try {
-      const res = await fetch("/api/session");
-      if (!res.ok) throw new Error(`Error fetching session: ${res.statusText}`);
-      const data = await res.json();
-      setSession(data.session);
-    } catch (error) {
-      console.error("Session fetch error:", error);
-    }
-  };
+  const { edgestore } = useEdgeStore();
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/grouplist/byname", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/grouplist/byname', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: groupid }),
       });
       if (!res.ok) throw new Error(`Error fetching data: ${res.statusText}`);
       const data = await res.json();
       setResData(data.message._doc);
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error('Fetch error:', error);
     }
   };
 
   const fetchPosts = async () => {
     try {
-      const res = await fetch("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ groupId: groupid }),
       });
       if (res.ok) {
@@ -79,36 +66,38 @@ const Chatroom = () => {
   };
 
   useEffect(() => {
-    fetchSession();
     fetchData();
-  }, []);
+  }, [groupid]);
 
   useEffect(() => {
-    if (groupid !== "") setInterval(()=>fetchPosts(),5000)
+    if (groupid !== '') {
+      const interval = setInterval(fetchPosts, 5000);
+      return () => clearInterval(interval); // Cleanup
+    }
   }, [groupid]);
 
   const sendMessage = async () => {
     if (!text && !file) return;
 
     try {
-      let imageUrl = "";
+      let imageUrl = '';
       if (file) {
         const imgRes = await edgestore.myPublicImages.upload({ file });
         imageUrl = imgRes.url;
       }
 
-      const res = await fetch("/api/posts/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: groupid, text,imageurl: imageUrl }),
+      const res = await fetch('/api/posts/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId: groupid, text, imageurl: imageUrl }),
       });
 
       if (!res.ok) throw new Error(`Error sending message: ${res.statusText}`);
-      setText("");
+      setText('');
       setFile(null);
-      setSelectedImg(""); // Clear the preview
+      setSelectedImg('');
     } catch (error) {
-      console.error("Send message error:", error);
+      console.error('Send message error:', error);
     }
   };
 
@@ -132,21 +121,21 @@ const Chatroom = () => {
         <h2 className="text-gray-600 m-auto text-4xl">Loading...</h2>
       )}
 
-      <div className="w-[1200px] p-4 text-white bg-gray-800  rounded mb-4">
-        {/* Post Form */}
+      <div className="w-[1200px] p-4 text-white bg-gray-800 rounded mb-4">
         <textarea
           value={text}
-          
           onChange={(e) => setText(e.target.value)}
           className="w-full h-[100px] resize-none p-2 bg-gray-800 outline-none border-none rounded"
           placeholder="What's on your mind?"
         ></textarea>
         {selectedImg && (
           <div className="mt-4">
-            <img
+            <Image
               src={selectedImg}
               alt="Selected"
-              className="w-[300px] h-[300px] object-cover rounded-lg"
+              width={300}
+              height={300}
+              className="object-cover rounded-lg"
             />
           </div>
         )}
@@ -175,7 +164,7 @@ const Chatroom = () => {
             id="imageUpload"
             type="file"
             accept="image/*"
-            onChange={(e)=>handleFileChange(e)}
+            onChange={handleFileChange}
             className="hidden"
           />
         </div>
@@ -187,8 +176,10 @@ const Chatroom = () => {
         </button>
       </div>
 
-      {/* Posts Display */}
-      <div className="w-full h-[200vh] p-4 text-white rounded overflow-hidden overflow-y-scroll " style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div
+        className="w-full h-[200vh] p-4 text-white rounded overflow-hidden overflow-y-scroll"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         {Array.isArray(posts) &&
           posts.map((post) => <Post key={post._id} post={post} />)}
       </div>

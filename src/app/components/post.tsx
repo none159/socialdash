@@ -176,18 +176,14 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
       alert("Failed to copy the link. Please try again.");
     }
   };
-
   useEffect(() => {
-    const initializeData = async () => {
-      await fetchUser();
-      await fetchComments();
-    };
-  
-    initializeData();
+    fetchUser();
+    fetchComments();
   
     const intervalId = setInterval(() => fetchComments(), 3000);
     return () => clearInterval(intervalId);
-  }, [fetchComments]);
+  }, [fetchComments]); // Added fetchComments to the dependency array
+  
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
