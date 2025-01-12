@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 import Image from 'next/image'
 interface PostType {
   _id: string;
@@ -103,7 +103,7 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
 
   
   useEffect(() => {
-
+    fetchUser()
     const fetchComments =async () => {
       const res = await fetch(`/api/posts/comments?postId=${_id}`);
       if (res.ok) {
@@ -121,7 +121,7 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
   
     const intervalId = setInterval(() => fetchComments(), 3000);
     return () => clearInterval(intervalId);
-  }, []);
+  });
   
   const fetchCommentLikeStatus = async (comments: CommentType[]) => {
     try {
