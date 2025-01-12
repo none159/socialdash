@@ -28,5 +28,5 @@ export default async function middleware(request: NextRequest){
     if(payload!=null &&(!isloginpage || !isregisterpage)){
         return NextResponse.redirect(new URL('/', request.url));
     }    
-    return updatesession(request);
+    return updatesession();
 }

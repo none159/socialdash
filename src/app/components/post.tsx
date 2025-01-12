@@ -100,23 +100,22 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
     }
   };
 
-  const fetchComments = useCallback(async () => {
-    const res = await fetch(`/api/posts/comments?postId=${_id}`);
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.comments)) {
-        setComments(data.comments);
-        fetchCommentLikeStatus(data.comments);
-      }
-    } else {
-      console.error("Failed to fetch comments");
-    }
-  }, [_id]);
+
   
   useEffect(() => {
 
-       fetchUser();
-       fetchComments();
+    const fetchComments =async () => {
+      const res = await fetch(`/api/posts/comments?postId=${_id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.comments)) {
+          setComments(data.comments);
+          fetchCommentLikeStatus(data.comments);
+        }
+      } else {
+        console.error("Failed to fetch comments");
+      }
+    }
     
 
   
@@ -176,14 +175,8 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
       alert("Failed to copy the link. Please try again.");
     }
   };
-  useEffect(() => {
-    fetchUser();
-    fetchComments();
-  
-    const intervalId = setInterval(() => fetchComments(), 3000);
-    return () => clearInterval(intervalId);
-  }, [fetchComments]); // Added fetchComments to the dependency array
-  
+
+
 
   useEffect(() => {
     const fetchLikeStatus = async () => {

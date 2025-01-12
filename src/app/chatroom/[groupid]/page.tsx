@@ -34,42 +34,44 @@ const Chatroom = () => {
   const [file, setFile] = useState<File | null>(null);
   const { edgestore } = useEdgeStore();
 
-  const fetchData = async () => {
-    try {
-      const res = await fetch('/api/grouplist/byname', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: groupid }),
-      });
-      if (!res.ok) throw new Error(`Error fetching data: ${res.statusText}`);
-      const data = await res.json();
-      setResData(data.message._doc);
-    } catch (error) {
-      console.error('Fetch error:', error);
-    }
-  };
 
-  const fetchPosts = async () => {
-    try {
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupId: groupid }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPosts(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+
+ 
 
   useEffect(() => {
-    fetchData();
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/grouplist/byname', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: groupid }),
+        });
+        if (!res.ok) throw new Error(`Error fetching data: ${res.statusText}`);
+        const data = await res.json();
+        setResData(data.message._doc);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+    fetchData()
   }, [groupid]);
 
   useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groupId: groupid }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPosts(data.message);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
     if (groupid !== '') {
       const interval = setInterval(fetchPosts, 5000);
       return () => clearInterval(interval); // Cleanup
