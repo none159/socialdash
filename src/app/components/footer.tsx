@@ -79,7 +79,7 @@ const Footer = () => {
     alt="fiverr"
     width={18}
     height={18}
-    src="/fiverr.png"
+    src="/public/fiverr.png"
     className="object-cover" // Ensure the image fits within the container
   />
 </a>
