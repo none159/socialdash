@@ -10,7 +10,7 @@ const Aipage = () => {
   const conversationRef = useRef<HTMLDivElement | null>(null); // Ref for conversation div
 
   const inference = new HfInference(process.env.NEXT_PUBLIC_HUGGING_FACE_TOKEN);
-
+  console.log(process.env.NEXT_PUBLIC_HUGGING_FACE_TOKEN)
   // Fetch data from the bot
   const fetchData = async (prompt: string, e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
