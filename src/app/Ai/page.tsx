@@ -38,7 +38,7 @@ const Aipage = () => {
 
       // Update conversation: include user's input and bot's response
       const newConversation = `
-        <span class="text-green-600">${username?username:"User"}</span> ${prompt}<br>
+        <span class="text-green-600">${username?username:"User"} :</span> ${prompt}<br>
         <span class="text-yellow-400">Bot:</span> ${fullText}<br>
       `;
 

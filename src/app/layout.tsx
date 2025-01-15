@@ -30,6 +30,7 @@ export default function RootLayout({
           integrity="sha384-C3jD4Y5uG1DJHf1LPn2s5shW3RGl6eZf/b8up0AdWk5ATeXtFk6KDnOby0aRFOhG"
           crossOrigin="anonymous"
         />
+        
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-900 font-sans`}>
         <div className="flex flex-col min-h-screen">

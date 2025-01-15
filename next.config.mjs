@@ -5,6 +5,8 @@ const nextConfig = { images: {
         protocol: 'https',
         hostname: 'files.edgestore.dev',
         pathname: '/**',
+      },  {
+        hostname:'upload.wikimedia.org',
       },
     ],}};
 
