@@ -9,7 +9,7 @@ const Aipage = () => {
   const [overflowStyle, setOverflowStyle] = useState<"hidden" | "auto">("hidden"); // Controls overflow
   const conversationRef = useRef<HTMLDivElement | null>(null); // Ref for conversation div
 
-  const inference = new HfInference("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");
+  const inference = new HfInference(process.env.NEXT_PUBLIC_HUGGING_FACE_TOKEN);
 
   // Fetch data from the bot
   const fetchData = async (prompt: string, e: React.FormEvent<HTMLFormElement>) => {

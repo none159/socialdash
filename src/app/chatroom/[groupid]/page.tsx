@@ -135,9 +135,9 @@ const Chatroom = () => {
             <Image
               src={selectedImg}
               alt="Selected"
-              width={300}
-              height={300}
-              className="object-cover rounded-lg"
+              width="300"
+              height="300"
+              className="object-cover w-full h-full rounded-lg"
             />
           </div>
         )}

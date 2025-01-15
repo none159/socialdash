@@ -202,6 +202,8 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
       <div className="flex items-center mb-4">
         <Image
           src={user?.image||""}
+          width={10}
+          height={10}
           className="w-10 h-10 bg-gray-600 rounded-full flex-shrink-0 mr-3"
           alt={user ? `${user.username}'s profile` : "User"}
         />
@@ -216,6 +218,8 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
       {image && (
         <Image
           src={image}
+          width={500}
+          height={500}
           className="w-[500px] h-[400px] rounded my-5 object-contain"
           alt="Uploaded"
         />

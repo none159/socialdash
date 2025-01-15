@@ -54,8 +54,8 @@ const MyGroups = () => {
                   className="w-[350px] rounded-t h-[300px] mb-2"
                   src={item.image || "/no-image-icon-23485.png"}
                   alt={item.title}
-                  width={350}
-                  height={300}
+                  width="350"
+                  height="300"
                 />
               </div>
               <div className="grid place-items-center gap-5">
