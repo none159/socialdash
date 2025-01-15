@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaLinkedin, FaGithub } from "react-icons/fa";
 import { SiVercel } from "react-icons/si";
+import Image from "next/image";
 
 const Footer = () => {
 
@@ -74,7 +75,7 @@ const Footer = () => {
   rel="noopener noreferrer"
   className="flex justify-center items-center p-1 rounded-full bg-gray-800 hover:bg-white" // Apply background to the button container
 >
-  <img
+  <Image
     alt="fiverr"
     width={18}
     height={18}
