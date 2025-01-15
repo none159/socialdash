@@ -8,9 +8,19 @@ const Aipage = () => {
   const [conversation, setConversation] = useState<string>(""); // Stores full conversation
   const [overflowStyle, setOverflowStyle] = useState<"hidden" | "auto">("hidden"); // Controls overflow
   const conversationRef = useRef<HTMLDivElement | null>(null); // Ref for conversation div
-
+ const [username,setusername]=useState("")
   const inference = new HfInference(process.env.NEXT_PUBLIC_HUGGING_FACE_TOKEN);
-  console.log(process.env.NEXT_PUBLIC_HUGGING_FACE_TOKEN)
+  const fetchuser= async()=>{
+    try {
+       const res = await fetch("api/session/getname")
+       if(res.ok){
+        const data = await res.json()
+        setusername(data.username)
+       }
+    } catch (error) {
+      console.error(error)
+    }
+  }
   // Fetch data from the bot
   const fetchData = async (prompt: string, e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -28,7 +38,7 @@ const Aipage = () => {
 
       // Update conversation: include user's input and bot's response
       const newConversation = `
-        <span class="text-green-600">User:</span> ${prompt}<br>
+        <span class="text-green-600">${username?username:"User"}</span> ${prompt}<br>
         <span class="text-yellow-400">Bot:</span> ${fullText}<br>
       `;
 
@@ -52,7 +62,9 @@ const Aipage = () => {
       setOverflowStyle("hidden"); // Hide scroll if content fits
     }
   }, [conversation]);
-
+ useEffect(()=>{
+  fetchuser()
+ },[])
   return (
     <section className="relative top-[100px]">
       <div className="grid place-items-center gap-10">
