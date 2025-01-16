@@ -218,7 +218,7 @@ const Post: React.FC<{ post: PostType }> = ({ post }) => {
       {image && (
         <Image
           src={image}
-          width={500}
+          width={400}
           height={500}
           className="w-[500px] h-[400px] rounded my-5 object-contain"
           alt="Uploaded"
