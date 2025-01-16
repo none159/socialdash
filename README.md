@@ -39,8 +39,8 @@ npm install
 ---
 🔑 Environment Variables
 Make sure to set up the following environment variables in your Vercel or local development environment:
----
 HUGGING_FACE_TOKEN: Your Hugging Face API token (for AI features)
+---
 ⚠️ Disclaimer
 The AI feature included in this application is not highly intelligent and is designed to provide only basic responses to simple prompts.
 ---
