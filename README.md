@@ -16,7 +16,7 @@
 
   <p><strong>🛠️ Tech Stack:</strong></p>
   <ul>
-    <li><strong>Frontend:</strong> React, Tailwind CSS</li>
+    <li><strong>Frontend:</strong> Next,TypeScript, Tailwind CSS</li>
     <li><strong>Backend:</strong> Hugging Face API (for AI integration)</li>
     <li><strong>Deployment:</strong> Vercel</li>
   </ul>
